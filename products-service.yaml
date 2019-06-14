@@ -3,11 +3,10 @@ apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   name: products-service
-  namespace: mongodb
   labels:
     component: products-service
 spec:
-  replicas: 2
+  replicas: 1 
   selector:
     matchLabels:
       component: products-service   
@@ -16,11 +15,18 @@ spec:
       labels: # labels to select/identify the deployment
         component: products-service  
     spec:     # pod spec               
+      serviceAccountName: products-service 
       containers: 
       - name: products-service
         image: quay.io/jason_mimick/products-service # image we pushed
         ports:
-        - containerPort: 8080
+        - containerPort: 12831
+        env:
+          - name: PRODUCTS_SERVICE_DB
+            valueFrom:
+              secretKeyRef:
+               name: products-service-db
+               key: dburi
 ---
 apiVersion: v1
 kind: Service
@@ -28,11 +34,11 @@ metadata:
   name: products-service
   labels:
     component: products-service
-  namespace: mongodb
 spec:
   selector:
     component: products-service
   ports:
   - name: http
-    targetPort: 5000
+    targetPort: 12831
     port: 80
+

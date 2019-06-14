@@ -1,28 +1,34 @@
 import os
+import sys
 import logging
 from flask import Flask
 from flask import request
 from pymongo import MongoClient
-from kubernetes import client, config, watch
+#from kubernetes import client, config, watch
 from flask_httpauth import HTTPBasicAuth
 
 logger = logging.getLogger('products-microservice')
 log_level = os.environ.get('PRODUCTS_MICROSERVICE_LOG_LEVEL','DEBUG')
 logger.setLevel(log_level)
 logger.info('product-microservice startup')
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+logger.debug(f'{os.environ}')
 
 app = Flask(__name__)
 auth = HTTPBasicAuth()
 
-config.load_incluster_config()
-kube_api = client.CoreV1Api()
-secret_name = os.environ.get("PRODUCT_SERVICE_DB_URI")
-logger.debug(f'${secret_name}')
-secret = kube_api.get_namespaced_secret(secret_name,namespace)
-logger.debug(f'Remove this from production! Remove ${secret}')
-logger.debug(f'Read ${secret_name} ${secret.data}')
-
-mongo = MongoClient(secret.data)  
+ns_file = '/var/run/secrets/kubernetes.io/serviceaccount/namespace'
+with open(ns_file,'r') as f:
+    namespace = f.read()
+logger.info(f'{namespace}')
+dburi = os.environ.get('PRODUCTS_SERVICE_DB')
+logger.debug( f'Read environment PRODUCTS_SERVICE_DB: {dburi}' )
+mongo = MongoClient(dburi)  
 
 #client = MongoClient('example.com',
 #                      username="<X.509 derived username>"
@@ -66,4 +72,6 @@ def root():
        return (500, f'Unsupported ${request.method}')
 
 if __name__ == '__main__':
-    app.run(debug=True,host='0.0.0.0',port='12831')
+    port = os.environ.get('PRODUCTS_SERVICE_SERVICE_PORT_HTTP')
+    logger.info(f'Read PRODUCTS_SERVICE_SERVICE_PORT_HTTP={port}')
+    app.run(debug=True,host='0.0.0.0',port=port)
