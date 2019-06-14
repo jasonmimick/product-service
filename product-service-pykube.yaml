@@ -1,0 +1,68 @@
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: products-service
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "watch", "list"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: pods-list
+subjects:
+- kind: ServiceAccount
+  name: products-service
+  namespace: jason-test
+roleRef:
+  kind: ClusterRole
+  name: pods-list
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: products-service
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: products-service
+  labels:
+    component: products-service
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      component: products-service   
+  template:
+    metadata:
+      labels: # labels to select/identify the deployment
+        component: products-service  
+    spec:     # pod spec               
+      serviceAccountName: products-service 
+      containers: 
+      - name: products-service
+        image: quay.io/jason_mimick/products-service # image we pushed
+        ports:
+        - containerPort: 12831
+        env:
+        - name: PRODUCT_SERVICE_DB_URI_REF
+          value: product-service-db
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: products-service
+  labels:
+    component: products-service
+spec:
+  selector:
+    component: products-service
+  ports:
+  - name: http
+    targetPort: 12831
+    port: 80
+
