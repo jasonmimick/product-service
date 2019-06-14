@@ -1,4 +1,5 @@
 import os
+import sys
 import logging
 from flask import Flask
 from flask import request
@@ -10,18 +11,36 @@ logger = logging.getLogger('products-microservice')
 log_level = os.environ.get('PRODUCTS_MICROSERVICE_LOG_LEVEL','DEBUG')
 logger.setLevel(log_level)
 logger.info('product-microservice startup')
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+logger.debug(f'{os.environ}')
 
 app = Flask(__name__)
 auth = HTTPBasicAuth()
 
+ns_file = '/var/run/secrets/kubernetes.io/serviceaccount/namespace'
+with open(ns_file,'r') as f:
+    namespace = f.read()
+logger.info(f'{namespace}')
+
+
 config.load_incluster_config()
 kube_api = client.CoreV1Api()
+
 secret_name = os.environ.get("PRODUCT_SERVICE_DB_URI")
 logger.debug(f'${secret_name}')
-secret = kube_api.get_namespaced_secret(secret_name,namespace)
+
+secret = kube_api.read_namespaced_secret(secret_name,namespace)
+oogger.info(f'{namespace}')
 logger.debug(f'Remove this from production! Remove ${secret}')
 logger.debug(f'Read ${secret_name} ${secret.data}')
 
+
+logger.info(f'${namespace}')
 mongo = MongoClient(secret.data)  
 
 #client = MongoClient('example.com',
