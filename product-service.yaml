@@ -1,4 +1,24 @@
 ---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: products-service
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["list"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: pods-list
+subjects:
+- kind: ServiceAccount
+  name: products-service
+roleRef:
+  kind: ClusterRole
+  name: pods-list
+  apiGroup: rbac.authorization.k8s.io---
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
@@ -6,6 +26,10 @@ metadata:
   labels:
     component: products-service
 spec:
+<<<<<<< HEAD:product-service.yaml
+=======
+  serviceAccountName: products-service 
+>>>>>>> fa1a18f2b4fc9a9992bef3f8836be6767d55ba0f:products-service.yaml
   replicas: 1 
   selector:
     matchLabels:
@@ -22,11 +46,16 @@ spec:
         ports:
         - containerPort: 12831
         env:
+<<<<<<< HEAD:product-service.yaml
           - name: PRODUCTS_SERVICE_DB
             valueFrom:
               secretKeyRef:
                name: products-service-db
                key: dburi
+=======
+        - name: PRODUCT_SERVICE_DB_URI
+          value: mongodb://server+srv.foo/
+>>>>>>> fa1a18f2b4fc9a9992bef3f8836be6767d55ba0f:products-service.yaml
 ---
 apiVersion: v1
 kind: Service
