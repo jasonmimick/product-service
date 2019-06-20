@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: product-service-import 
+spec:
+  containers:
+    - name: product-service-import 
+      image: quay.io/jason_mimick/product-service-import 
+      env:
+      - name: 'MONGODB_HOST'
+        valueFrom:
+          secretKeyRef:
+           name: product-service-import-host
+           key: dbhost
+      - name: 'TARGET_DB'
+        value: 'products'
+      - name: 'TARGET_COLL'
+        value: 'reviews'
+      - name: 'IMPORT_FILE'
+        value: '/product-reviews.csv'
+      command : [ 'mongoimport' ]
+      args:
+      - '--host'
+      - '$(MONGODB_HOST)'
+      - '--db'
+      - '$(TARGET_DB)'
+      - '--collection'
+      - '$(TARGET_COLL)'
+      - '--type'
+      - 'csv'
+      - '--headerline'
+      - '--ssl'
+      - '--sslAllowInvalidCertificates'
+      - '--drop'
+      - '--verbose=2'
+      - '--file'
+      - '$(IMPORT_FILE)'
+  restartPolicy: Never
+

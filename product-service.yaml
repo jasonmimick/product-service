@@ -1,73 +1,42 @@
----
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: products-service
-rules:
-- apiGroups: [""]
-  resources: ["secrets"]
-  verbs: ["list"]
----
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: pods-list
-subjects:
-- kind: ServiceAccount
-  name: products-service
-roleRef:
-  kind: ClusterRole
-  name: pods-list
-  apiGroup: rbac.authorization.k8s.io---
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: products-service
+  name: product-service
   labels:
-    component: products-service
+    component: product-service
 spec:
-<<<<<<< HEAD:product-service.yaml
-=======
-  serviceAccountName: products-service 
->>>>>>> fa1a18f2b4fc9a9992bef3f8836be6767d55ba0f:products-service.yaml
   replicas: 1 
   selector:
     matchLabels:
-      component: products-service   
+      component: product-service   
   template:
     metadata:
       labels: # labels to select/identify the deployment
-        component: products-service  
+        component: product-service  
     spec:     # pod spec               
-      serviceAccountName: products-service 
       containers: 
-      - name: products-service
-        image: quay.io/jason_mimick/products-service # image we pushed
+      - name: product-service
+        image: quay.io/jason_mimick/product-service # image we pushed
         ports:
-        - containerPort: 12831
+        - containerPort: 80
         env:
-<<<<<<< HEAD:product-service.yaml
-          - name: PRODUCTS_SERVICE_DB
+          - name: PRODUCT_SERVICE_DB
             valueFrom:
               secretKeyRef:
-               name: products-service-db
+               name: product-service-db
                key: dburi
-=======
-        - name: PRODUCT_SERVICE_DB_URI
-          value: mongodb://server+srv.foo/
->>>>>>> fa1a18f2b4fc9a9992bef3f8836be6767d55ba0f:products-service.yaml
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: products-service
+  name: product-service
   labels:
-    component: products-service
+    component: product-service
 spec:
   selector:
-    component: products-service
+    component: product-service
   ports:
   - name: http
-    targetPort: 12831
+    targetPort: 80
     port: 80
 

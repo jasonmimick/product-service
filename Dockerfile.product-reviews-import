@@ -1,0 +1,7 @@
+FROM mongo:rc
+COPY ./product-reviews.csv /
+ENV TARGET_DB products
+ENV TARGET_COLL reviews
+ENV IMPORT_FILE /product-reviews.csv
+CMD mongoimport --host ${MONGODB_URI} --db ${TARGET_DB} --collection ${TARGET_COLL} --type csv --file ${IMPORT_FILE}
+

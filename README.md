@@ -25,8 +25,14 @@ production systems.
 ## Getting started
 
 ```bash
+$unzip consumer-reviews-of-amazon-products.zip
+$kubecrl run -it mongo:rc :wq
+
+$kubectl run -it mongo:rc mongoimport --host <HOST> -d products -c reviews
+```bash
 $git clone https://github.com/jasonmimick/products-service
 $cd products-service
 $kubectl create secret PRODUCTS_SERVICE_MONGODB_URI
 "mongodb+srv://products-db-src.cluster.local"
 $kubectl apply -f kubernetes/products-service.yaml
+

@@ -1,6 +1,7 @@
 FROM python:3.7-alpine3.9 as base
 
 FROM base as builder
+RUN apk add curl
 RUN mkdir /app
 COPY /app/requirements.txt /app
 WORKDIR /app
